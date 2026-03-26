@@ -1,0 +1,199 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Détail mission{% endblock %}
+
+{% block content %}
+<section class="hero hero-compact">
+    <div class="hero-content">
+        <p class="hero-kicker">
+            {% if is_demo_mission %}
+                Mission de démonstration
+            {% else %}
+                Mission réelle
+            {% endif %}
+        </p>
+        <h2 class="hero-title">{{ mission.name }}</h2>
+        <p class="hero-text">
+            {% if is_demo_mission %}
+                Cette mission a été créée depuis le site pour tester le comportement du système.
+            {% else %}
+                Cette mission est une mission réelle visible sur le site et gérée côté administration.
+            {% endif %}
+        </p>
+    </div>
+</section>
+
+<section class="panel mission-actions-panel">
+    <div class="actions-row">
+        {% if mission.status == "draft" or mission.status == "planned" %}
+        <form method="post" action="{% url 'launch_mission' mission.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Lancer la mission</button>
+        </form>
+        {% endif %}
+
+        {% if mission.status == "running" %}
+        <form method="post" action="{% url 'advance_mission' mission.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Avancer au waypoint suivant</button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if mission.status == "completed" %}
+    <div class="status-banner status-banner-completed">
+        Mission terminée avec succès.
+    </div>
+
+    <div class="mission-end-actions">
+        <a href="{% url 'dashboard' %}" class="btn btn-primary">
+            Retour au tableau de bord
+        </a>
+    </div>
+
+{% elif mission.status == "running" %}
+    <div class="status-banner status-banner-running">
+        Mission en cours d'exécution.
+    </div>
+
+{% else %}
+    <div class="status-banner status-banner-draft">
+        Mission en attente de lancement.
+    </div>
+{% {% if mission.status == "completed" %}
+    <div class="status-banner status-banner-completed">
+        Mission terminée avec succès.
+    </div>
+
+    <div class="mission-end-actions">
+        <a href="{% url 'dashboard' %}" class="btn btn-primary">
+            Retour au tableau de bord
+        </a>
+    </div>
+
+{% elif mission.status == "running" %}
+    <div class="status-banner status-banner-running">
+        Mission en cours d'exécution.
+    </div>
+
+{% else %}
+    <div class="status-banner status-banner-draft">
+        Mission en attente de lancement.
+    </div>
+{% endif %}
+</section>
+
+<section class="stats-grid mission-stats-grid">
+    <article class="stat-card">
+        <p class="stat-label">Type</p>
+        <p class="stat-value stat-value-small">
+            {% if is_demo_mission %}
+                Démonstration
+            {% else %}
+                Réelle
+            {% endif %}
+        </p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Site</p>
+        <p class="stat-value stat-value-small">{{ mission.site.name }}</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Statut</p>
+        <p class="stat-value stat-value-small">{{ mission.display_status }}</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Waypoint courant</p>
+        <p class="stat-value stat-value-small">
+            {% if current_waypoint %}
+                {{ current_waypoint.order_index }}
+            {% else %}
+                Aucun
+            {% endif %}
+        </p>
+    </article>
+</section>
+
+<div class="content-grid content-grid-detail">
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Waypoints</h3>
+        </div>
+
+        {% if waypoints %}
+            <ul class="item-list">
+                {% for waypoint in waypoints %}
+                    <li class="item-card">
+                        <div>
+                            <p class="item-title">Waypoint {{ waypoint.order_index }}</p>
+                            <p class="item-subtitle">Coordonnées : ({{ waypoint.x }}, {{ waypoint.y }}, {{ waypoint.z }})</p>
+                            <p class="item-subtitle">Vitesse : {{ waypoint.speed }}</p>
+                        </div>
+
+                        {% if current_waypoint and current_waypoint.order_index == waypoint.order_index %}
+                            <span class="badge badge-running">Courant</span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucun waypoint associé.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Sessions de vol</h3>
+        </div>
+
+        {% if flight_sessions %}
+            <ul class="item-list">
+                {% for session in flight_sessions %}
+                    <li class="item-card">
+                        <div>
+                            <p class="item-title">Session de vol</p>
+                            <p class="item-subtitle">Début : {{ session.start_time }}</p>
+                            <p class="item-subtitle">Fin : {{ session.end_time }}</p>
+                            <p class="item-subtitle">Statut : {{ session.display_status }}</p>
+                        </div>
+
+                        {% if session.status == "running" %}
+                            <span class="badge badge-running">{{ session.display_status }}</span>
+                        {% elif session.status == "completed" %}
+                            <span class="badge badge-completed">{{ session.display_status }}</span>
+                        {% else %}
+                            <span class="badge badge-draft">{{ session.display_status }}</span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucune session de vol associée.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel panel-full">
+        <div class="panel-header">
+            <h3>Logs associés</h3>
+        </div>
+
+        {% if mission_logs %}
+            <ul class="timeline-list">
+                {% for log in mission_logs %}
+                    <li class="timeline-item">
+                        <p class="timeline-date">{{ log.timestamp }}</p>
+                        <p class="timeline-event">{{ log.display_event_type }}</p>
+                        <p class="timeline-message">{{ log.message }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucun log associé.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

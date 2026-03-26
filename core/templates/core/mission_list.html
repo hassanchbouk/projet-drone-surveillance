@@ -1,0 +1,50 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Liste des missions{% endblock %}
+
+{% block content %}
+<section class="hero hero-compact">
+    <div class="hero-content">
+        <p class="hero-kicker">Mode démo</p>
+        <h2 class="hero-title">Liste des missions de démonstration</h2>
+        <p class="hero-text">
+            Cette page affiche uniquement les missions créées pour la démonstration du parcours indoor.
+        </p>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h3>Missions démo</h3>
+    </div>
+
+    {% if missions %}
+        <ul class="item-list">
+            {% for mission in missions %}
+                <li class="item-card">
+                    <div>
+                        <a href="{% url 'mission_detail' mission.id %}" class="item-title link-title">
+                            {{ mission.name }}
+                        </a>
+                        <p class="item-subtitle">Site : {{ mission.site.name }}</p>
+                        <p class="item-subtitle">Déclenchement : {{ mission.trigger_type }}</p>
+                    </div>
+
+                    {% if mission.status == "running" %}
+                        <span class="badge badge-running">{{ mission.status }}</span>
+                    {% elif mission.status == "completed" %}
+                        <span class="badge badge-completed">{{ mission.status }}</span>
+                    {% else %}
+                        <span class="badge badge-draft">{{ mission.status }}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty-state">
+            Aucune mission démo disponible. Termine une mission existante puis crée une nouvelle mission de démo.
+        </p>
+    {% endif %}
+</section>
+{% endblock %}

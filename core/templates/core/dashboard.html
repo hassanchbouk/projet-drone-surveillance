@@ -1,0 +1,322 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <p class="hero-kicker">Supervision du système</p>
+        <h2 class="hero-title">Missions réelles et missions démo</h2>
+        <p class="hero-text">
+            Les missions réelles sont visibles sur le site et gérées côté administration.
+            Les missions démo peuvent être créées et pilotées directement depuis cette interface.
+        </p>
+    </div>
+</section>
+
+<section class="panel panel-full">
+    <div class="panel-header">
+        <h3>Créer une mission démo</h3>
+    </div>
+
+    {% if sites %}
+    <form method="post" action="{% url 'create_demo_mission' %}" class="demo-form">
+        {% csrf_token %}
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="name">Nom de la mission démo</label>
+                <input type="text" id="name" name="name" placeholder="Exemple : Mission démo indoor A">
+            </div>
+
+            <div class="form-group">
+                <label for="site">Site</label>
+                <select id="site" name="site" required>
+                    {% for site in sites %}
+                        <option value="{{ site.id }}">{{ site.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-waypoints">
+            <div class="form-waypoint-card">
+                <h4>Waypoint 1</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="x1">Coordonnée X</label>
+                        <input type="number" step="any" id="x1" name="x1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="y1">Coordonnée Y</label>
+                        <input type="number" step="any" id="y1" name="y1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="z1">Coordonnée Z</label>
+                        <input type="number" step="any" id="z1" name="z1" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-waypoint-card">
+                <h4>Waypoint 2</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="x2">Coordonnée X</label>
+                        <input type="number" step="any" id="x2" name="x2" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="y2">Coordonnée Y</label>
+                        <input type="number" step="any" id="y2" name="y2" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="z2">Coordonnée Z</label>
+                        <input type="number" step="any" id="z2" name="z2" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Créer la mission démo</button>
+    </form>
+    {% else %}
+        <p class="empty-state">Aucun site n’est disponible. Créez d’abord un site dans l’administration.</p>
+    {% endif %}
+</section>
+
+<div class="content-grid">
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Missions réelles en attente</h3>
+        </div>
+
+        {% if real_missions_draft %}
+            <ul class="item-list">
+                {% for mission in real_missions_draft %}
+                    <li class="item-card">
+                        <div>
+                            <a href="{% url 'mission_detail' mission.id %}" class="item-title link-title">{{ mission.name }}</a>
+                            <p class="item-subtitle">Site : {{ mission.site.name }}</p>
+                            <p class="item-subtitle">Statut : {{ mission.display_status }}</p>
+                        </div>
+                        <span class="badge badge-draft">{{ mission.display_status }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucune mission réelle en attente.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Missions réelles en cours</h3>
+        </div>
+
+        {% if real_missions_running %}
+            <ul class="item-list">
+                {% for mission in real_missions_running %}
+                    <li class="item-card">
+                        <div>
+                            <a href="{% url 'mission_detail' mission.id %}" class="item-title link-title">{{ mission.name }}</a>
+                            <p class="item-subtitle">Site : {{ mission.site.name }}</p>
+                            <p class="item-subtitle">Statut : {{ mission.display_status }}</p>
+                        </div>
+                        <span class="badge badge-running">{{ mission.display_status }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucune mission réelle en cours.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Missions réelles terminées</h3>
+        </div>
+
+        {% if real_missions_completed %}
+            <ul class="item-list">
+                {% for mission in real_missions_completed %}
+                    <li class="item-card">
+                        <div>
+                            <a href="{% url 'mission_detail' mission.id %}" class="item-title link-title">{{ mission.name }}</a>
+                            <p class="item-subtitle">Site : {{ mission.site.name }}</p>
+                            <p class="item-subtitle">Statut : {{ mission.display_status }}</p>
+                        </div>
+                        <span class="badge badge-completed">{{ mission.display_status }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucune mission réelle terminée.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Missions démo en attente</h3>
+        </div>
+
+        {% if demo_missions_draft %}
+            <ul class="item-list">
+                {% for mission in demo_missions_draft %}
+                    <li class="item-card">
+                        <div>
+                            <a href="{% url 'mission_detail' mission.id %}" class="item-title link-title">{{ mission.name }}</a>
+                            <p class="item-subtitle">Site : {{ mission.site.name }}</p>
+                            <p class="item-subtitle">Statut : {{ mission.display_status }}</p>
+                        </div>
+                        <span class="badge badge-draft">{{ mission.display_status }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucune mission démo en attente.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Missions démo en cours</h3>
+        </div>
+
+        {% if demo_missions_running %}
+            <ul class="item-list">
+                {% for mission in demo_missions_running %}
+                    <li class="item-card">
+                        <div>
+                            <a href="{% url 'mission_detail' mission.id %}" class="item-title link-title">{{ mission.name }}</a>
+                            <p class="item-subtitle">Site : {{ mission.site.name }}</p>
+                            <p class="item-subtitle">Waypoint courant : {{ mission.current_waypoint_index }}</p>
+                            <p class="item-subtitle">Statut : {{ mission.display_status }}</p>
+                        </div>
+                        <span class="badge badge-running">{{ mission.display_status }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucune mission démo en cours.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Missions démo terminées</h3>
+        </div>
+
+        {% if demo_missions_completed %}
+            <ul class="item-list">
+                {% for mission in demo_missions_completed %}
+                    <li class="item-card">
+                        <div>
+                            <a href="{% url 'mission_detail' mission.id %}" class="item-title link-title">{{ mission.name }}</a>
+                            <p class="item-subtitle">Site : {{ mission.site.name }}</p>
+                            <p class="item-subtitle">Statut : {{ mission.display_status }}</p>
+                        </div>
+                        <span class="badge badge-completed">{{ mission.display_status }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucune mission démo terminée.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Sessions réelles récentes</h3>
+        </div>
+
+        {% if recent_real_sessions %}
+            <ul class="item-list">
+                {% for session in recent_real_sessions %}
+                    <li class="item-card">
+                        <div>
+                            <p class="item-title">{{ session.mission.name }}</p>
+                            <p class="item-subtitle">Début : {{ session.start_time }}</p>
+                            <p class="item-subtitle">Fin : {{ session.end_time }}</p>
+                            <p class="item-subtitle">Statut : {{ session.display_status }}</p>
+                        </div>
+                        <span class="badge badge-draft">{{ session.display_status }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucune session réelle récente.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <h3>Sessions démo récentes</h3>
+        </div>
+
+        {% if recent_demo_sessions %}
+            <ul class="item-list">
+                {% for session in recent_demo_sessions %}
+                    <li class="item-card">
+                        <div>
+                            <p class="item-title">{{ session.mission.name }}</p>
+                            <p class="item-subtitle">Début : {{ session.start_time }}</p>
+                            <p class="item-subtitle">Fin : {{ session.end_time }}</p>
+                            <p class="item-subtitle">Statut : {{ session.display_status }}</p>
+                        </div>
+                        {% if session.status == "running" %}
+                            <span class="badge badge-running">{{ session.display_status }}</span>
+                        {% elif session.status == "completed" %}
+                            <span class="badge badge-completed">{{ session.display_status }}</span>
+                        {% else %}
+                            <span class="badge badge-draft">{{ session.display_status }}</span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucune session démo récente.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel panel-full">
+        <div class="panel-header">
+            <h3>Derniers logs réels</h3>
+        </div>
+
+        {% if recent_real_logs %}
+            <ul class="timeline-list">
+                {% for log in recent_real_logs %}
+                    <li class="timeline-item">
+                        <p class="timeline-date">{{ log.timestamp }}</p>
+                        <p class="timeline-event">{{ log.display_event_type }}</p>
+                        <p class="timeline-message">{{ log.message }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucun log réel disponible.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel panel-full">
+        <div class="panel-header">
+            <h3>Derniers logs démo</h3>
+        </div>
+
+        {% if recent_demo_logs %}
+            <ul class="timeline-list">
+                {% for log in recent_demo_logs %}
+                    <li class="timeline-item">
+                        <p class="timeline-date">{{ log.timestamp }}</p>
+                        <p class="timeline-event">{{ log.display_event_type }}</p>
+                        <p class="timeline-message">{{ log.message }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">Aucun log démo disponible.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

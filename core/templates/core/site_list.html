@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Liste des sites{% endblock %}
+
+{% block content %}
+<h2>Liste des sites</h2>
+
+{% if sites %}
+    <ul>
+        {% for site in sites %}
+            <li>
+                <strong>{{ site.name }}</strong><br>
+                {{ site.description }}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Aucun site enregistré.</p>
+{% endif %}
+{% endblock %}
